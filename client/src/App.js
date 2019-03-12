@@ -23,10 +23,12 @@ class App extends Component {
     this.state = {
        weather: null,
        cityList: [],
-       newCityName: ''
+       newCityName: '',
+       vrsteList: [],
+       novaVrstaNaziv: ''
     };
   }
-
+//-----------------------------------------------------
   getCityList = () => {
     fetch('/api/cities')
     .then(res => res.json())
@@ -36,10 +38,23 @@ class App extends Component {
     });
   };
 
+  getVrsteList = () => {
+    fetch('/api/vrste')
+    .then(res => res.json())
+    .then(res => {
+      var vrsteList = res.map(r => r.naziv_vrste);
+      this.setState({ vrsteList });
+    });
+  };
+//-----------------------------------------------------
   handleInputChange = (e) => {
     this.setState({ newCityName: e.target.value });
   };
 
+  handleInputChangeVrste = (e) => {
+    this.setState({ novaVrstaNaziv: e.target.value });
+  };
+//-----------------------------------------------------
   handleAddCity = () => {
     fetch('/api/cities', {
       method: 'post',
@@ -53,6 +68,19 @@ class App extends Component {
     });
   };
 
+  handleDodajVrstu = () => {
+    fetch('/api/vrste', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vrste: this.state.novaVrstaNaziv })
+    })
+    .then(res => res.json())
+    .then(res => {
+      this.getVrsteList();
+      this.setState({ novaVrstaNaziv: '' });
+    });
+  };
+//-----------------------------------------------------
   getWeather = (city) => {
     fetch(`/api/weather/${city}`)
     .then(res => res.json())
@@ -61,41 +89,68 @@ class App extends Component {
       this.setState({ weather });
     });
   }
-
+//-----------------------------------------------------
   handleChangeCity = (e) => {
     this.getWeather(e.target.value);
   }
 
+  handleChangeVrsta = (e) => {
+    this.getWeather(e.target.value);
+  }
+//-----------------------------------------------------
   componentDidMount () {
     this.getCityList();
+    this.getVrsteList();
   }
 
   render() {
     return (
       <Container fluid className="centered">
         <Navbar dark color="dark">
-          <NavbarBrand href="/">MyWeather</NavbarBrand>
+          <NavbarBrand href="/">Anketa</NavbarBrand>
         </Navbar>
         <Row>
           <Col>
             <Jumbotron>
-              <h1 className="display-3">MyWeather</h1>
-              <p className="lead">The current weather for your favorite cities!</p>
+              <h1 className="display-3">Anketa</h1>
+              <p className="lead">Popunite anketu da bi unapredili našu saradnju!</p>
               <InputGroup>
                 <Input 
-                  placeholder="New city name..."
+                  placeholder="Nova vrsta korisnika..."
+                  value={this.state.novaVrstaNaziv}
+                  onChange={this.handleInputChangeVrste}
+                />
+                <InputGroupAddon addonType="append">
+                  <Button color="primary" onClick={this.handleDodajVrstu}>Dodaj novu vrstu korisnika</Button>
+                </InputGroupAddon>                
+              </InputGroup>
+              <br/>
+              <InputGroup>
+                <Input 
+                  placeholder="Add new city..."
                   value={this.state.newCityName}
                   onChange={this.handleInputChange}
                 />
                 <InputGroupAddon addonType="append">
-                  <Button color="primary" onClick={this.handleAddCity}>Add City</Button>
-                </InputGroupAddon>
-                
+                  <Button color="primary" onClick={this.handleAddCity}>Add new city</Button>
+                </InputGroupAddon>                
               </InputGroup>
+              { this.state.vrsteList.map((vrsta, i) =><div key={i}><Input type="checkbox"  key={i} />{vrsta}<br/></div> ) }
             </Jumbotron>
           </Col>
         </Row>
         <Row>
+        <Col>
+            <h1 className="display-5">Vrste korisnika</h1>
+            <FormGroup>
+              <Input type="select" onChange={this.handleChangeVrsta}>
+                { this.state.vrsteList.length === 0 && <option>Nisu još dodate vrste.</option> }
+                { this.state.vrsteList.length > 0 && <option>Selektuj vrstu.</option> }
+                 { this.state.vrsteList.map((vrsta, i) => <option key={i}>{vrsta}</option>) }                 
+              </Input>             
+            </FormGroup>
+           
+          </Col>
           <Col>
             <h1 className="display-5">Current Weather</h1>
             <FormGroup>
@@ -106,6 +161,7 @@ class App extends Component {
               </Input>
             </FormGroup>
           </Col>
+         
         </Row>
         <Weather data={this.state.weather}/>
       </Container>
