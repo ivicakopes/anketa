@@ -14,6 +14,10 @@ app.use(bodyParser.json());
 
 app.use('/api/cities', require('./api/cities'));
 app.use('/api/vrste', require('./api/vrste'));
+app.use('/api/pitanja', require('./api/pitanja'));
+app.use('/api/pv', require('./api/pv'));
+//app.use('/api/pitanja', require('./api/pitanja'));
+//app.use('/api/pitanja', require('./api/pitanja'));
 app.use('/api/weather', require('./api/weather'));
 
 if (ENV === 'production') {

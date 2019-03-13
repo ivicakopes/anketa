@@ -25,6 +25,8 @@
   "homepage": "https://github.com/BryceStPierre/full-stack-react-app-tutorial#readme",
   "devDependencies": {
     "concurrently": "^3.6.1",
+    "dynamic-cdn-webpack-plugin": "^4.0.0",
+    "module-to-cdn": "^3.1.2",
     "nodemon": "^1.18.10"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
     "dotenv": "^6.0.0",
     "express": "^4.16.4",
     "pg": "^7.8.2",
+    "prop-types": "^15.7.2",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
     "react-scripts": "^2.1.8",

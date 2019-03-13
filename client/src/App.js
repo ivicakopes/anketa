@@ -8,7 +8,7 @@ import {
   Jumbotron,
   InputGroup,
   InputGroupAddon,
-  Button,
+  Button,  
   FormGroup,
   Input,
   Col
@@ -25,7 +25,11 @@ class App extends Component {
        cityList: [],
        newCityName: '',
        vrsteList: [],
-       novaVrstaNaziv: ''
+       bazaVrste:[],
+       novaVrstaNaziv: '',
+       novoPitanje: '',
+       pitanjaList: [],
+       bazaPitanja: []
     };
   }
 //-----------------------------------------------------
@@ -34,16 +38,32 @@ class App extends Component {
     .then(res => res.json())
     .then(res => {
       var cityList = res.map(r => r.city_name);
-      this.setState({ cityList });
+      this.setState({ cityList });      
+    });
+  };
+
+  getPitanjaList = () => {
+    fetch('/api/pitanja')
+    .then(res => res.json())
+    .then(res => {
+      var bazaPitanja = res;
+      this.setState({ bazaPitanja });
+      var pitanjaList = res.map(r => r.pitanje);
+      this.setState({ pitanjaList });      
     });
   };
 
   getVrsteList = () => {
     fetch('/api/vrste')
-    .then(res => res.json())
+    .then(res => res.json())    
     .then(res => {
+      //console.log(res);
+      var bazaVrste = res;
+      this.setState({ bazaVrste });
       var vrsteList = res.map(r => r.naziv_vrste);
-      this.setState({ vrsteList });
+      this.setState({ vrsteList });      
+      //console.log(this.state.vrsteList);
+      
     });
   };
 //-----------------------------------------------------
@@ -53,6 +73,10 @@ class App extends Component {
 
   handleInputChangeVrste = (e) => {
     this.setState({ novaVrstaNaziv: e.target.value });
+  };
+
+  handleInputChangePitanje = (e) => {
+    this.setState({ novoPitanje: e.target.value });
   };
 //-----------------------------------------------------
   handleAddCity = () => {
@@ -80,6 +104,38 @@ class App extends Component {
       this.setState({ novaVrstaNaziv: '' });
     });
   };
+
+  handleDodajPitanje = () => {
+    
+    fetch('/api/pitanja', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pitanje: this.state.novoPitanje })
+    })
+    .then(res => {
+      //this.wait(15000);
+     // res.json();
+      
+    })
+    .then(res => {       
+      this.getPitanjaList();
+      this.setState({ novoPitanje: '' });
+      for (const checkbox of this.selectedCheckboxes) {
+        this.handleDodajPV(4,checkbox);
+      }
+      
+    });    
+  }
+
+  handleDodajPV = (pitanje, vrsta) => {
+    console.log(pitanje,vrsta);    
+    fetch('/api/pv', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pitanje: pitanje, vrsta: vrsta })
+    })
+  };
+  
 //-----------------------------------------------------
   getWeather = (city) => {
     fetch(`/api/weather/${city}`)
@@ -101,6 +157,19 @@ class App extends Component {
   componentDidMount () {
     this.getCityList();
     this.getVrsteList();
+    this.selectedCheckboxes = new Set();
+  }
+
+  // za checkboxes  ------------------------------------
+
+  toggleCheckbox = e => {
+    var label = e.target.value;
+    if (this.selectedCheckboxes.has(label)) {
+      this.selectedCheckboxes.delete(label);
+    } else {
+      this.selectedCheckboxes.add(label);
+    }
+    console.log(label);
   }
 
   render() {
@@ -109,6 +178,7 @@ class App extends Component {
         <Navbar dark color="dark">
           <NavbarBrand href="/">Anketa</NavbarBrand>
         </Navbar>
+       
         <Row>
           <Col>
             <Jumbotron>
@@ -123,8 +193,8 @@ class App extends Component {
                 <InputGroupAddon addonType="append">
                   <Button color="primary" onClick={this.handleDodajVrstu}>Dodaj novu vrstu korisnika</Button>
                 </InputGroupAddon>                
-              </InputGroup>
-              <br/>
+              </InputGroup><br/>
+
               <InputGroup>
                 <Input 
                   placeholder="Add new city..."
@@ -133,9 +203,23 @@ class App extends Component {
                 />
                 <InputGroupAddon addonType="append">
                   <Button color="primary" onClick={this.handleAddCity}>Add new city</Button>
-                </InputGroupAddon>                
-              </InputGroup>
-              { this.state.vrsteList.map((vrsta, i) =><div key={i}><Input type="checkbox"  key={i} />{vrsta}<br/></div> ) }
+                </InputGroupAddon>                              
+              </InputGroup><br/> 
+
+             
+                <FormGroup>
+                  <Input 
+                    placeholder="Novo pitanje ..."
+                    value={this.state.novoPitanje}
+                    onChange={this.handleInputChangePitanje}
+                  /><br/>                 
+                  { this.state.bazaVrste.map((vrsta, i) =><div  key={i}><Input type="checkbox" onClick={this.toggleCheckbox} key={vrsta.id_vrste} value={vrsta.id_vrste} />{vrsta.naziv_vrste}<br/></div> ) }
+                  <br/> 
+                  <InputGroupAddon addonType="append">
+                      <Button color="primary" onClick={this.handleDodajPitanje}>Dodaj pitanje</Button>
+                  </InputGroupAddon>
+                </FormGroup>
+              
             </Jumbotron>
           </Col>
         </Row>
