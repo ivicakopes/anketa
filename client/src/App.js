@@ -28,6 +28,7 @@ class App extends Component {
        bazaVrste:[],
        novaVrstaNaziv: '',
        novoPitanje: '',
+       pitanjeSaId: null,
        pitanjaList: [],
        bazaPitanja: []
     };
@@ -45,7 +46,7 @@ class App extends Component {
   getPitanjaList = () => {
     fetch('/api/pitanja')
     .then(res => res.json())
-    .then(res => {
+    .then(res => {      
       var bazaPitanja = res;
       this.setState({ bazaPitanja });
       var pitanjaList = res.map(r => r.pitanje);
@@ -53,11 +54,24 @@ class App extends Component {
     });
   };
 
+  getPitanjeByTekst = () => {
+    var pit = this.state.novoPitanje;
+    fetch(`/api/pitanja/${pit}`)
+    .then(res =>res.json())
+    .then(pitanjeSaId => {
+      console.log('resultat 2 je ' + pitanjeSaId.id_pitanja.value);      
+      this.setState({ pitanjeSaId });
+      console.log('2. potrebno');  
+      console.log('1.GETPITANJE ' + this.state.pitanjeSaId.pitanje); 
+      
+    });
+  };
+
   getVrsteList = () => {
     fetch('/api/vrste')
     .then(res => res.json())    
     .then(res => {
-      //console.log(res);
+      console.log('resultat vrste res ' + res);
       var bazaVrste = res;
       this.setState({ bazaVrste });
       var vrsteList = res.map(r => r.naziv_vrste);
@@ -106,25 +120,23 @@ class App extends Component {
   };
 
   handleDodajPitanje = () => {
-    
+    console.log('1. potrebno'); 
     fetch('/api/pitanja', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pitanje: this.state.novoPitanje })
     })
+    .then(() => fetch(`/api/pitanja/${this.state.novoPitanje}`))
+    .then(res => res.json())
     .then(res => {
-      //this.wait(15000);
-     // res.json();
-      
-    })
-    .then(res => {       
-      this.getPitanjaList();
-      this.setState({ novoPitanje: '' });
+      var pitanjeSaId = res[0];
+      this.setState({ pitanjeSaId });
+      this.setState({ novoPitanje: ''});    //brise tekst pitanja ,ali ima ceo slog u pitanjeSaId
+      this.getPitanjaList(); 
       for (const checkbox of this.selectedCheckboxes) {
-        this.handleDodajPV(4,checkbox);
-      }
-      
-    });    
+        this.handleDodajPV(this.state.pitanjeSaId.id_pitanja,checkbox);
+      }      
+    })   
   }
 
   handleDodajPV = (pitanje, vrsta) => {
@@ -169,7 +181,6 @@ class App extends Component {
     } else {
       this.selectedCheckboxes.add(label);
     }
-    console.log(label);
   }
 
   render() {

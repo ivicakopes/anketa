@@ -1,16 +1,18 @@
 const db = require('../database');
 
 class Pitanja {
-  static retrieveByPitanje (pitanje,callback) {
-    db.query('SELECT * from pitanja where pitanje =  VALUES ($1)',[pitanje],(err, res) => {
+  
+
+  static retrieveAll (callback) {
+    db.query('SELECT * from pitanja', (err, res) => {
       if (err.error)
         return callback(err);
       callback(res);
     });
   }
 
-  static retrieveAll (callback) {
-    db.query('SELECT * from pitanja', (err, res) => {
+  static retrievePitanjeByTekst (pitanje,callback) {
+    db.query(`SELECT * from pitanja where pitanje = $1`,[pitanje],(err, res) => {
       if (err.error)
         return callback(err);
       callback(res);

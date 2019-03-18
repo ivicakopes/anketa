@@ -11,6 +11,15 @@ router.get('/', (req, res) => {
   });
 });
 
+router.get('/:pitanje', (req, res) => {
+  var pitanje = req.params.pitanje;
+  Pitanja.retrievePitanjeByTekst(pitanje, (err, pitanje) => {
+    if (err)
+      return res.json(err);
+    return res.json(pitanje);
+  });
+});
+
 router.post('/', (req, res) => {
   var pitanje = req.body.pitanje;
 
